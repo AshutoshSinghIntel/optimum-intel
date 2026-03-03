@@ -573,6 +573,7 @@ class OVModelForVisualCausalLMIntegrationTest(OVSeq2SeqTestMixin):
         SUPPORTED_ARCHITECTURES += ["qwen2_5_vl"]
         SUPPORT_VIDEO.append("qwen2_5_vl")
 
+
         # TODO: add fix for v5 and update MAX_TRANSFORMERS_VERSION accordingly
         if is_transformers_version("<", "5"):
             SUPPORTED_ARCHITECTURES += ["got_ocr2"]
@@ -587,6 +588,9 @@ class OVModelForVisualCausalLMIntegrationTest(OVSeq2SeqTestMixin):
         # TODO: add fix for v5 and update MAX_TRANSFORMERS_VERSION accordingly
         if is_transformers_version("<", "5"):
             SUPPORTED_ARCHITECTURES += ["smolvlm"]
+
+    if is_transformers_version(">=", "4.50.0"):
+        SUPPORTED_ARCHITECTURES += ["mistral3"]
 
     # TODO: add fix for v5 and update MAX_TRANSFORMERS_VERSION accordingly
     if is_transformers_version(">=", "4.51") and is_transformers_version("<", "5"):
@@ -625,6 +629,7 @@ class OVModelForVisualCausalLMIntegrationTest(OVSeq2SeqTestMixin):
             "llava",
             "llava_next",
             "llava_next_mistral",
+            "mistral3",
             "qwen2_vl",
             "qwen2_5_vl",
             "got_ocr2",
