@@ -63,7 +63,6 @@ from optimum.intel.utils.import_utils import (
 
 from ._ov_ops import convert_recurrent_attention_cell
 
-
 if is_transformers_version(">=", "4.53"):
     from transformers.masking_utils import ALL_MASK_ATTENTION_FUNCTIONS, eager_mask, sdpa_mask
     from transformers.models.qwen3_moe.modeling_qwen3_moe import Qwen3MoeSparseMoeBlock
@@ -2365,7 +2364,7 @@ def _persimmon_self_attn_sdpa_forward(
     fused_qkv = self.query_key_value(hidden_states)
 
     # 3 x [batch_size, seq_length, num_heads, head_dim]
-    (query_states, key_states, value_states) = self._split_heads(fused_qkv)
+    query_states, key_states, value_states = self._split_heads(fused_qkv)
 
     if self.qk_layernorm:
         query_states = self.q_layernorm(query_states)
@@ -3449,7 +3448,7 @@ def mistral3_vision_embed_forward(self, pixel_values):
     return image_features
 
 
-# Adopted from https://github.com/huggingface/transformers/blob/v5.2.0/src/transformers/models/mistral3/modeling_mistral3.py#L76-L94 
+# Adopted from https://github.com/huggingface/transformers/blob/v5.2.0/src/transformers/models/mistral3/modeling_mistral3.py#L76-L94
 # and https://github.com/huggingface/transformers/blob/v5.2.0/src/transformers/models/mistral3/modeling_mistral3.py#L118-L124
 # Mistral3MultiModalProjector.forward() and Mistral3PatchMerger.forward() with norm and cycle block excluded.
 # norm is moved to vision_embed_forward, cycle block runs in PyTorch at runtime.
