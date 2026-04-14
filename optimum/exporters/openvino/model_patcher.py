@@ -767,9 +767,9 @@ class MistralModelPatcher(OVDecoderModelPatcher):
             self._model.model._update_causal_mask = self._model.model._orig_update_causal_mask
             del self._model.model._orig_update_causal_mask
 
-        if hasattr(self._model.model, "model") and hasattr(self._model.model.model, "layers"):
+        if hasattr(self._model, "model") and hasattr(self._model.model, "layers"):
             for layer in self._model.model.layers:
-                if hasattr(layer.self_attn, "rotary_emb"):
+                if hasattr(layer.self_attn, "rotary_emb") and hasattr(layer.self_attn.rotary_emb, "_orig_forward"):
                     layer.self_attn.rotary_emb.forward = layer.self_attn.rotary_emb._orig_forward
                     del layer.self_attn.rotary_emb._orig_forward
 
@@ -3437,14 +3437,16 @@ class LlavaNextVideoImageEmbeddingModelPatcher(ModelPatcher):
 # Mistral3Model.get_image_features() with only projector.norm() applied instead of full projector forward,
 # as the patch_merger cycle block (unfold loop) cannot be traced to OpenVINO IR.
 def mistral3_vision_embed_forward(self, pixel_values):
-    image_features = self.vision_tower(pixel_values, output_hidden_states=True)
+    vision_tower = getattr(self, "vision_tower", None) or getattr(self.model, "vision_tower", None)
+    multi_modal_projector = getattr(self, "multi_modal_projector", None) or getattr(self.model, "multi_modal_projector", None)
+    image_features = vision_tower(pixel_values, output_hidden_states=True)
     vision_feature_layer = self.config.vision_feature_layer
     if isinstance(vision_feature_layer, int):
         selected_image_feature = image_features.hidden_states[vision_feature_layer]
     else:
         hs_pool = [image_features.hidden_states[layer_idx] for layer_idx in vision_feature_layer]
         selected_image_feature = torch.cat(hs_pool, dim=-1)
-    image_features = self.multi_modal_projector.norm(selected_image_feature.squeeze(0))
+    image_features = multi_modal_projector.norm(selected_image_feature.squeeze(0))
     return image_features
 
 

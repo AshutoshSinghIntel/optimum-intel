@@ -1439,6 +1439,21 @@ class MistralOpenVINOConfig(MistralOnnxConfig):
 
 
 @register_in_tasks_manager(
+    "ministral3",
+    *[
+        "feature-extraction",
+        "feature-extraction-with-past",
+        "text-generation",
+        "text-generation-with-past",
+        "text-classification",
+    ],
+    library_name="transformers",
+)
+class Ministral3OpenVINOConfig(MistralOpenVINOConfig):
+    pass
+
+
+@register_in_tasks_manager(
     "gpt_neox",
     *[
         "feature-extraction",
@@ -2177,6 +2192,13 @@ class Mistral3OpenVINOConfig(BaseVLMOpenVINOConfig):
                 if hasattr(model, "multi_modal_projector")
                 else model.model.multi_modal_projector
             )
+
+        if behavior == VLMConfigBehavior.TEXT_EMBEDDINGS:
+            language_model = getattr(model, "language_model", None) or getattr(model.model, "language_model", None)
+            text_embedding = model.get_input_embeddings()
+            if language_model is not None:
+                text_embedding.config = language_model.config
+            return text_embedding
 
         return super().get_model_for_behavior(model, behavior)
 
